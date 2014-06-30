@@ -57,4 +57,10 @@ class Distribution(Base):
     def __repr__(self):
         return "<Distribution: {0}>".format(self.course)
 
+    def grades_as_list(self):
+        return [self.a_plus, self.a, self.a_minus,
+                self.b_plus, self.b, self.b_minus,
+                self.c_plus, self.c, self.c_minus,
+                self.d_plus, self.d, self.d_minus, self.f]
+
 Base.metadata.create_all(engine)
