@@ -8,13 +8,23 @@ def get_dept_avgs(session):
     the lower division average, the upper division average, and the total
     average."""
     avgs = []
+    overall_counts = [[0 for _ in range(13)] for _ in range(3)]
     for dept in session.query(Department).order_by(Department.id):
         lower_counts = sum_distributions(dept, session, "lower")
         upper_counts = sum_distributions(dept, session, "upper")
-        total_counts = map(add, lower_counts, upper_counts)
-        all_avgs = map(compute_avg, [lower_counts, upper_counts, total_counts])
+        ug_counts = map(add, lower_counts, upper_counts)
+        all_counts = [lower_counts, upper_counts, ug_counts]
+        overall_counts = map(lambda x, y: map(add, x, y),
+                             all_counts, overall_counts)
+        all_sums = map(sum, all_counts)
+        all_avgs = map(compute_avg, all_counts)
         if any(all_avgs):
-            avgs.append(tuple([dept.name] + all_avgs))
+            combined = reduce(add, [[all_sums[i], all_avgs[i]] for i in range(3)])
+            avgs.append(tuple([dept.name, dept.code] + combined))
+    overall_sums = map(sum, overall_counts)
+    overall_avgs = map(compute_avg, overall_counts)
+    combined = reduce(add, [[overall_sums[i], overall_avgs[i]] for i in range(3)])
+    avgs.append(tuple(['Overall', 'ALL'] + combined))
     return avgs
 
 def sum_distributions(dept, session, div = None):
@@ -52,8 +62,10 @@ def compute_avg(counts):
 def write_to_csv(avgs):
     f = open('dept_avgs.csv', 'wb')
     writer = csv.writer(f)
-    writer.writerow(['Department', 'Lower Division Average',
-                     'Upper Division Average', 'Undergraduate Average'])
+    writer.writerow(['Department', 'Code',
+                     'Lower Division Grades', 'Lower Division Average',
+                     'Upper Division Grades', 'Upper Division Average',
+                     'Undergraduate Grades', 'Undergraduate Average'])
     for tup in avgs:
         writer.writerow(tup)
     f.close()
