@@ -1,0 +1,5 @@
+PyExecJS==1.0.4
+SQLAlchemy==0.9.6
+beautifulsoup4==4.3.2
+requests==2.3.0
+wsgiref==0.1.2
